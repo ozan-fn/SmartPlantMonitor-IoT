@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [humidity, setHumidity] = useState(0);
   const [temperature, setTemperature] = useState(0);
-  const [soilMoisture, _setSoilMoisture] = useState(10); // Misalnya kelembaban tanah mulai dari 10%
+  const [soilMoisture, setSoilMoisture] = useState(0); // Misalnya kelembaban tanah mulai dari 10%
 
   useEffect(() => {
     mqttClient.on("message", (topic, payload) => {
@@ -15,6 +15,8 @@ export default function Home() {
         setTemperature(parseFloat(payload.toString()));
       } else if (topic === "kelembaban") {
         setHumidity(parseFloat(payload.toString()));
+      } else if (topic == "kelembaban_tanah") {
+        setSoilMoisture(parseFloat(payload.toString()));
       }
     });
   }, []);
@@ -23,7 +25,7 @@ export default function Home() {
     <>
       <Action />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8 ">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-8">
         {/* Kelembaban Tanah */}
         <div className="p-4 border rounded-md border-zinc-700 flex flex-col gap-2">
           <div className="flex justify-between items-center">

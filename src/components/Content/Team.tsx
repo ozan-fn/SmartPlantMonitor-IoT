@@ -1,18 +1,25 @@
 export default function Team() {
   return (
-    <>
-      <table className="table w-full max-w-sm md:max-w-md">
-        <tbody>
+    <div className="mx-auto bg-zinc-900 text-white rounded-lg shadow-lg">
+      <h2 className="text-3xl font-semibold text-center mb-6">Anggota Tim</h2>
+      <table className="table w-full text-lg text-left">
+        <thead>
           <tr>
-            <td>- AKHMAD FAUZAN</td>
-            <td>23SA11A032</td>
+            <th className="p-2">Nama</th>
+            <th className="p-2">NIM</th>
           </tr>
-          <tr>
-            <td>- DEVAN MAULANA SATRIANI</td>
-            <td>23SA11A033</td>
+        </thead>
+        <tbody>
+          <tr className="border-t border-zinc-700">
+            <td className="p-2">- AKHMAD FAUZAN</td>
+            <td className="p-2">23SA11A032</td>
+          </tr>
+          <tr className="border-t border-zinc-700">
+            <td className="p-2">- DEVAN MAULANA SATRIANI</td>
+            <td className="p-2">23SA11A033</td>
           </tr>
         </tbody>
       </table>
-    </>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import { HomeIcon, InfoIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import Home from "./Home";
 import Team from "./Team";
+import Info from "./Info";
 
 export default function Content() {
   const [tab, setTab] = useState("home");
@@ -19,7 +20,7 @@ export default function Content() {
       case "home":
         return <Home />;
       case "info":
-        return <p>Here is some Info for you!</p>;
+        return <Info />;
       case "team":
         return <Team />;
       default:
