@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 export default function Home() {
   const [humidity, setHumidity] = useState(0);
   const [temperature, setTemperature] = useState(0);
-  const [soilMoisture, setSoilMoisture] = useState(10); // Misalnya kelembaban tanah mulai dari 10%
+  const [soilMoisture, _setSoilMoisture] = useState(10); // Misalnya kelembaban tanah mulai dari 10%
 
   useEffect(() => {
     mqttClient.on("message", (topic, payload) => {

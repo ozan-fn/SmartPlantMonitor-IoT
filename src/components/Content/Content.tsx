@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { HomeIcon, InfoIcon, LogsIcon, UsersIcon } from "lucide-react";
+import { HomeIcon, InfoIcon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import Home from "./Home";
 import Team from "./Team";
