@@ -44,9 +44,9 @@ export default function Content() {
         ))}
       </div>
 
-      <div className="">
+      <div className="overflow-hidden flex flex-1">
         <AnimatePresence mode="wait">
-          <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, type: "spring" }}>
+          <motion.div className="overflow-hidden flex flex-1 flex-col" key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, type: "spring" }}>
             {renderContent()}
           </motion.div>
         </AnimatePresence>

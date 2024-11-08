@@ -1,6 +1,6 @@
 export default function Team() {
   return (
-    <div className="mx-auto bg-zinc-900 text-white rounded-lg shadow-lg">
+    <div className="flex-1 bg-zinc-900 text-white rounded-lg shadow-lg">
       <h2 className="text-3xl font-semibold text-center mb-6">Anggota Tim</h2>
       <table className="table w-full text-lg text-left">
         <thead>

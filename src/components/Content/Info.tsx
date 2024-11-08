@@ -1,6 +1,6 @@
 export default function Info() {
   return (
-    <div className="mx-auto space-y-6 bg-zinc-900 rounded-lg shadow-lg">
+    <div className="mx-auto space-y-6 bg-zinc-900 rounded-lg shadow-lg overflow-auto flex-1">
       <h2 className="text-3xl font-semibold text-center">Tentang Penyiram Otomatis Berbasis ESP8266</h2>
 
       <p className="text-lg">
