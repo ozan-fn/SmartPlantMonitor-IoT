@@ -11,11 +11,11 @@ export default function Team() {
         </thead>
         <tbody>
           <tr className="border-t border-zinc-700">
-            <td className="p-2">- AKHMAD FAUZAN</td>
+            <td className="p-2">AKHMAD FAUZAN</td>
             <td className="p-2">23SA11A032</td>
           </tr>
           <tr className="border-t border-zinc-700">
-            <td className="p-2">- DEVAN MAULANA SATRIANI</td>
+            <td className="p-2">DEVAN MAULANA SATRIANI</td>
             <td className="p-2">23SA11A033</td>
           </tr>
         </tbody>
