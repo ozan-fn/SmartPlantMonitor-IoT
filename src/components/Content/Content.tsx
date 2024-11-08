@@ -30,7 +30,7 @@ export default function Content() {
 
   return (
     <>
-      <div className="border border-zinc-700 rounded-md mt-2 grid grid-cols-3 md:w-fit">
+      <div className="border border-zinc-700 rounded-md grid grid-cols-3 md:w-fit">
         {tabs.map(({ id, icon: Icon, label }) => (
           <div key={id} className="relative flex">
             {tab === id && <motion.div layoutId="tabs" transition={{ type: "spring" }} className="bg-zinc-300 rounded-md absolute inset-0" />}
@@ -44,7 +44,7 @@ export default function Content() {
         ))}
       </div>
 
-      <div className="mt-4">
+      <div className="">
         <AnimatePresence mode="wait">
           <motion.div key={tab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4, type: "spring" }}>
             {renderContent()}
