@@ -11,8 +11,7 @@ export default function Status() {
     const checkConnection = () => {
       setMqttConnected(mqttClient.connected);
       const timeDifference = new Date().getTime() - pingTimeRef.current.getTime();
-      setEsp8266Connected(timeDifference <= 1300);
-      console.log(timeDifference);
+      setEsp8266Connected(timeDifference <= 2000);
     };
 
     const intervalId = setInterval(checkConnection, 1000);

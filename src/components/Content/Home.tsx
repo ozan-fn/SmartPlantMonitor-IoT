@@ -15,11 +15,18 @@ export default function Home() {
         setTemperature(parseFloat(payload.toString()));
       } else if (topic === "kelembaban") {
         setHumidity(parseFloat(payload.toString()));
-      } else if (topic == "kelembaban_tanah") {
+      } else if (topic === "kelembaban_tanah") {
         setSoilMoisture(parseFloat(payload.toString()));
       }
     });
   }, []);
+
+  // Fungsi untuk menentukan warna indikator berdasarkan persentase dengan hex color
+  const getIndicatorColor = (percentage: number) => {
+    if (percentage < 30) return "#FF5A5A"; // Merah untuk kelembaban rendah
+    if (percentage < 60) return "#FFDD57"; // Kuning untuk kelembaban sedang
+    return "#4CAF50"; // Hijau untuk kelembaban tinggi
+  };
 
   return (
     <>
@@ -36,8 +43,9 @@ export default function Home() {
             <p className="text-sm">{soilMoisture}%</p>
           </div>
           <div className="relative h-4 w-full border border-zinc-700 rounded-md mt-2">
-            <motion.div initial={{ width: "0%" }} animate={{ width: `${soilMoisture}%` }} className="absolute inset-0 bg-zinc-300 rounded-md" />
+            <motion.div initial={{ width: "0%" }} animate={{ width: `${soilMoisture}%`, backgroundColor: getIndicatorColor(soilMoisture) }} transition={{ duration: 2 }} style={{ backgroundColor: getIndicatorColor(soilMoisture) }} className="absolute inset-0 rounded-md" />
           </div>
+          <p className="text-xs mt-1 text-zinc-400">{soilMoisture < 30 ? "Kelembaban rendah - Mesin penyiram otomatis akan aktif." : "Kelembaban tanah memadai."}</p>
         </div>
 
         {/* Kelembaban Udara */}
@@ -50,8 +58,9 @@ export default function Home() {
             <p className="text-sm">{humidity}%</p>
           </div>
           <div className="relative h-4 w-full border border-zinc-700 rounded-md mt-2">
-            <motion.div initial={{ width: "0%" }} animate={{ width: `${humidity}%` }} className="absolute inset-0 bg-zinc-300 rounded-md" />
+            <motion.div initial={{ width: "0%" }} animate={{ width: `${humidity}%`, backgroundColor: getIndicatorColor(humidity) }} transition={{ duration: 2 }} style={{ backgroundColor: getIndicatorColor(humidity) }} className="absolute inset-0 rounded-md" />
           </div>
+          <p className="text-xs mt-1 text-zinc-400">{humidity < 30 ? "Kelembaban udara rendah, tingkatkan kelembaban." : humidity > 60 ? "Kelembaban tinggi, tetap monitor tanaman." : "Kelembaban udara normal."}</p>
         </div>
 
         {/* Suhu Udara */}
@@ -64,12 +73,9 @@ export default function Home() {
             <p className="text-sm">{temperature}°C</p>
           </div>
           <div className="relative h-4 w-full border border-zinc-700 rounded-md mt-2">
-            <motion.div
-              initial={{ width: "0%" }}
-              animate={{ width: `${(temperature + 10) * 2}%` }} // Mengubah skala suhu menjadi lebih terlihat
-              className="absolute inset-0 bg-zinc-300 rounded-md"
-            />
+            <motion.div initial={{ width: "0%" }} animate={{ width: `${(temperature + 10) * 2}%`, backgroundColor: getIndicatorColor((temperature + 10) * 2) }} transition={{ duration: 2 }} style={{ backgroundColor: getIndicatorColor((temperature + 10) * 2) }} className="absolute inset-0 rounded-md" />
           </div>
+          <p className="text-xs mt-1 text-zinc-400">{temperature < 15 ? "Suhu rendah, tanaman mungkin butuh suhu lebih hangat." : temperature > 30 ? "Suhu tinggi, perhatikan kebutuhan air tanaman." : "Suhu dalam kondisi optimal."}</p>
         </div>
       </div>
     </>

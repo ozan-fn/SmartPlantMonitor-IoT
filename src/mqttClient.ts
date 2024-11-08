@@ -9,7 +9,7 @@ const mqttClient = mqtt.connect("wss://a93bb6a45b2d4a60bbf254a374d0e89f.s1.eu.hi
 
 mqttClient.on("connect", () => {
   console.log("Connected to MQTT broker");
-  mqttClient.subscribe(["ping", "suhu", "kelembaban"]);
+  mqttClient.subscribe(["ping", "suhu", "kelembaban", "kelembaban_tanah"]);
 });
 
 mqttClient.on("error", (error: Error) => {
