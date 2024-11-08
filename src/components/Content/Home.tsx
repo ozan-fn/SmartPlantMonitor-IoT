@@ -10,15 +10,22 @@ export default function Home() {
   const [soilMoisture, setSoilMoisture] = useState(0); // Misalnya kelembaban tanah mulai dari 10%
 
   useEffect(() => {
-    mqttClient.on("message", (topic, payload) => {
+    const handleMQTTMessage = (topic: string, payload: Buffer) => {
+      const message = parseFloat(payload.toString());
       if (topic === "suhu") {
-        setTemperature(parseFloat(payload.toString()));
+        setTemperature(message);
       } else if (topic === "kelembaban") {
-        setHumidity(parseFloat(payload.toString()));
+        setHumidity(message);
       } else if (topic === "kelembaban_tanah") {
-        setSoilMoisture(parseFloat(payload.toString()));
+        setSoilMoisture(message);
       }
-    });
+    };
+
+    mqttClient.on("message", handleMQTTMessage);
+
+    return () => {
+      mqttClient.off("message", handleMQTTMessage);
+    };
   }, []);
 
   // Fungsi untuk menentukan warna indikator berdasarkan persentase dengan hex color
