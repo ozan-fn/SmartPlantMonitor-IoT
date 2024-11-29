@@ -39,7 +39,7 @@ export default function Home() {
         <>
             <Action />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4 overflow-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-9 overflow-auto">
                 {/* Kelembaban Tanah */}
                 <div className="p-4 border rounded-md border-zinc-700 flex flex-col gap-2">
                     <div className="flex justify-between items-center">
