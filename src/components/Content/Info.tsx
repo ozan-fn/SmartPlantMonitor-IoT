@@ -15,16 +15,19 @@ export default function Info() {
             <div className="border-t border-zinc-600 pt-6">
                 <h3 className="text-xl font-semibold">Tujuan:</h3>
                 <ul className="list-disc list-inside space-y-2 text-lg mt-4">
-                    <li>Menggunakan IoT untuk dapat memantau kondisi tanaman secara realtime dan penyiraman otomatis.</li>
-                    <li>
-                        <strong>Kontrol jarak jauh:</strong> Memungkinkan Anda untuk mengendalikan penyiraman dan memantau kondisi tanaman dari jarak jauh menggunakan platform berbasis Wi-Fi.
-                    </li>
-                    <li>
-                        <strong>Integrasi MQTT:</strong> Sistem terhubung dengan platform MQTT untuk pengiriman status dan notifikasi secara real-time.
-                    </li>
-                    <li>
-                        <strong>Sistem hemat air:</strong> Menggunakan sensor untuk menentukan kebutuhan air tanaman, sehingga tidak ada pemborosan air.
-                    </li>
+                    <li>Menggunakan IoT untuk memantau kondisi tanaman secara real-time dan mengelola penyiraman secara otomatis.</li>
+                    <li>Meningkatkan pemahaman masyarakat tentang penerapan teknologi dalam agrikultur untuk masa depan yang lebih berkelanjutan.</li>
+                    <li>Memperkenalkan teknologi modern kepada masyarakat guna mendukung edukasi berbasis teknologi.</li>
+                    <li>Memberikan alat bantu edukasi bagi masyarakat dan institusi pendidikan untuk memahami konsep pengelolaan tanaman yang efisien melalui teknologi IoT.</li>
+                </ul>
+
+                <h3 className="text-xl font-semibold mt-6">Manfaat:</h3>
+                <ul className="list-disc list-inside space-y-2 text-lg mt-4">
+                    <li>Mengurangi pemborosan sumber daya, seperti air dan pupuk, melalui pengelolaan berbasis data.</li>
+                    <li>Membantu mengurangi dampak negatif pertanian terhadap lingkungan dengan pengelolaan yang lebih efisien.</li>
+                    <li>Meningkatkan produktivitas pertanian untuk mendukung pertumbuhan ekonomi.</li>
+                    <li>Memberikan peluang pembelajaran teknologi IoT sebagai subjek edukasi, terutama dalam hal pengelolaan agrikultur yang modern dan efisien.</li>
+                    <li>Meningkatkan kesadaran dan keterampilan masyarakat dalam memanfaatkan teknologi IoT dalam bidang pertanian.</li>
                 </ul>
             </div>
         </div>
