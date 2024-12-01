@@ -84,6 +84,8 @@ export default function Home() {
                     </div>
                     <p className="text-xs mt-1 text-zinc-400">{temperature < 15 ? "Suhu rendah, tanaman mungkin butuh suhu lebih hangat." : temperature > 30 ? "Suhu tinggi, perhatikan kebutuhan air tanaman." : "Suhu dalam kondisi optimal."}</p>
                 </div>
+
+                <div className="h-20 w-1" />
             </div>
         </>
     );
