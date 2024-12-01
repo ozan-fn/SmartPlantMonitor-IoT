@@ -33,7 +33,7 @@ export default function Content() {
             <div className="border border-zinc-700 rounded-md grid grid-cols-3 md:w-fit">
                 {tabs.map(({ id, icon: Icon, label }) => (
                     <div key={id} className="relative flex">
-                        {tab === id && <motion.div layoutId="tabs" transition={{ type: "spring" }} className="bg-zinc-300 rounded-md absolute inset-0 z-10" />}
+                        {tab === id && <motion.div layoutId="tabs" transition={{ type: "spring" }} className="bg-zinc-300 rounded-md absolute inset-0" />}
                         <button onClick={() => setTab(id)} className="text-base rounded-md w-full py-2 md:py-0 md:h-12 px-4 relative mix-blend-exclusion">
                             <div className="flex flex-col md:flex-row gap-2 items-center justify-center">
                                 <Icon className="h-6 w-6" />
