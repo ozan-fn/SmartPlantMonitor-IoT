@@ -1,6 +1,6 @@
 export default function Info() {
     return (
-        <div className="mx-auto mt-12 pr-8 space-y-6 bg-zinc-900 rounded-lg shadow-lg overflow-auto flex-1 pb-12">
+        <div className="mx-auto mt-12 pr-8 space-y-6 bg-zinc-900 rounded-lg shadow-lg overflow-auto flex-1">
             <h2 className="text-3xl font-semibold text-center">SISTEM MONITORING DAN PENGELOLAAN TANAMAN BERBASIS WEBSITE MENGGUNAKAN NODEMCU ESP8266 DENGAN METODE MQTT</h2>
 
             <p className="text-md text-justify indent-8">
@@ -30,6 +30,8 @@ export default function Info() {
                     <li>Meningkatkan kesadaran dan keterampilan masyarakat dalam memanfaatkan teknologi IoT dalam bidang pertanian.</li>
                 </ul>
             </div>
+
+            <div className="h-20 w-1" />
         </div>
     );
 }
