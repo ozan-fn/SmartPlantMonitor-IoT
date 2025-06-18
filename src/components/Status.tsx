@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 export default function Status() {
   const [mqttConnected, setMqttConnected] = useState(false);
-  const [esp8266Connected, setEsp8266Connected] = useState(false);
+  const [esp32Connected, setesp32Connected] = useState(false);
   const [lastPingTime, setLastPingTime] = useState<Date | null>(null);
   const [connectionQuality, setConnectionQuality] = useState<'excellent' | 'good' | 'poor' | 'disconnected'>('disconnected');
   const pingTimeRef = useRef(new Date());
@@ -17,7 +17,7 @@ export default function Status() {
       if (pingTimeRef.current) {
         const timeDifference = new Date().getTime() - pingTimeRef.current.getTime();
         const isConnected = timeDifference <= 2000;
-        setEsp8266Connected(isConnected);
+        setesp32Connected(isConnected);
         
         if (!isConnected) {
           setConnectionQuality('disconnected');
@@ -98,7 +98,7 @@ export default function Status() {
   };
 
   const mqttColors = getConnectionColor(mqttConnected);
-  const esp8266Colors = getConnectionColor(esp8266Connected, connectionQuality);
+  const esp32Colors = getConnectionColor(esp32Connected, connectionQuality);
 
   const StatusCard = ({ 
     icon: Icon, 
@@ -180,9 +180,9 @@ export default function Status() {
         />
         <StatusCard
           icon={Wifi}
-          title="ESP8266 Device"
-          connected={esp8266Connected}
-          colors={esp8266Colors}
+          title="esp32 Device"
+          connected={esp32Connected}
+          colors={esp32Colors}
           showQuality={true}
           quality={connectionQuality}
           lastPing={lastPingTime}
@@ -194,13 +194,13 @@ export default function Status() {
           <div className="flex items-center gap-2">
             <div
               className={`w-3 h-3 rounded-full ${
-                mqttConnected && esp8266Connected ? 'bg-emerald-500' : 
-                mqttConnected || esp8266Connected ? 'bg-yellow-500' : 'bg-red-500'
+                mqttConnected && esp32Connected ? 'bg-emerald-500' : 
+                mqttConnected || esp32Connected ? 'bg-yellow-500' : 'bg-red-500'
               }`}
             />
             <span className="text-sm font-medium">
-              {mqttConnected && esp8266Connected ? 'All Systems Operational' :
-               mqttConnected || esp8266Connected ? 'Partial Connection' : 'Systems Offline'}
+              {mqttConnected && esp32Connected ? 'All Systems Operational' :
+               mqttConnected || esp32Connected ? 'Partial Connection' : 'Systems Offline'}
             </span>
           </div>
         </div>
