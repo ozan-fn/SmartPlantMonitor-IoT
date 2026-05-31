@@ -30,9 +30,9 @@ export default function Log() {
   const fetchLogs = async (page: number, showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const response = await fetch(
-        `http://93.115.101.176:9703/?page=${page}&size=${pageSize}`
-      );
+      const apiUrl = `http://93.115.101.176:9703/?page=${page}&size=${pageSize}`;
+      const proxyUrl = `https://proxy.scalar.com/?scalar_url=${encodeURIComponent(apiUrl)}`;
+      const response = await fetch(proxyUrl);
       const data = await response.json();
       setLogs(data.data || []);
       setTotalPages(data.total_pages || 1);
@@ -93,9 +93,9 @@ export default function Log() {
     setLoading(true);
     try {
       // Fetch all data
-      const response = await fetch(
-        `http://93.115.101.176:9703/?page=1&size=10000`
-      );
+      const apiUrl = `http://93.115.101.176:9703/?page=1&size=10000`;
+      const proxyUrl = `https://proxy.scalar.com/?scalar_url=${encodeURIComponent(apiUrl)}`;
+      const response = await fetch(proxyUrl);
       const data = await response.json();
       const allLogs = data.data || [];
 
