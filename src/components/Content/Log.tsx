@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { Download, RefreshCw, Database, Calendar } from 'lucide-react';
+import { Download, RefreshCw, Database, Calendar, Filter } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
 interface LogEntry {
@@ -25,14 +25,28 @@ export default function Log() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [quickFilter, setQuickFilter] = useState<string>('');
   const pageSize = 50;
 
   const fetchLogs = async (page: number, showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
-      const apiUrl = `http://93.115.101.176:9703/?page=${page}&size=${pageSize}`;
-      const proxyUrl = `https://proxy.scalar.com/?scalar_url=${encodeURIComponent(apiUrl)}`;
-      const response = await fetch(proxyUrl);
+      let url = `/api/logs?page=${page}&size=${pageSize}`;
+      
+      // Add filter parameters based on active filter
+      if (quickFilter) {
+        url += `&filter=${quickFilter}`;
+      } else if (startDate || endDate) {
+        if (startDate) url += `&start=${startDate}`;
+        if (endDate) url += `&end=${endDate}`;
+      }
+      
+      const response = await fetch(url);
       const data = await response.json();
       setLogs(data.data || []);
       setTotalPages(data.total_pages || 1);
@@ -46,19 +60,19 @@ export default function Log() {
 
   useEffect(() => {
     fetchLogs(1);
-  }, []);
+  }, [quickFilter, startDate, endDate]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (autoRefresh) {
       interval = setInterval(() => {
         fetchLogs(currentPage, false);
-      }, 1000);
+      }, 5000); // Changed to 5 seconds
     }
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [autoRefresh, currentPage]);
+  }, [autoRefresh, currentPage, quickFilter, startDate, endDate]);
 
   useEffect(() => {
     // Group logs by timestamp
@@ -89,15 +103,79 @@ export default function Log() {
     setGroupedLogs(groupedArray);
   }, [logs]);
 
+  const applyFilter = () => {
+    setShowFilterModal(false);
+  };
+
+  const clearFilter = () => {
+    setStartDate('');
+    setEndDate('');
+    setQuickFilter('');
+    setShowFilterModal(false);
+  };
+
+  const applyQuickFilter = (filterType: string) => {
+    setQuickFilter(filterType);
+    setStartDate('');
+    setEndDate('');
+  };
+
   const exportToExcel = async () => {
     setLoading(true);
+    setIsExporting(true);
+    setExportProgress(0);
     try {
-      // Fetch all data
-      const apiUrl = `http://93.115.101.176:9703/?page=1&size=10000`;
-      const proxyUrl = `https://proxy.scalar.com/?scalar_url=${encodeURIComponent(apiUrl)}`;
-      const response = await fetch(proxyUrl);
-      const data = await response.json();
-      const allLogs = data.data || [];
+      // Fetch all data with pagination and current filter
+      let allLogs: LogEntry[] = [];
+      let totalPagesForExport = 1;
+      
+      // Build URL with filter parameters
+      let baseUrl = `/api/logs?size=100`;
+      if (quickFilter) {
+        baseUrl += `&filter=${quickFilter}`;
+      } else if (startDate || endDate) {
+        if (startDate) baseUrl += `&start=${startDate}`;
+        if (endDate) baseUrl += `&end=${endDate}`;
+      }
+      
+      // First fetch to get total pages
+      setExportProgress(5);
+      const firstResponse = await fetch(`${baseUrl}&page=1`);
+      const firstData = await firstResponse.json();
+      
+      allLogs = [...(firstData.data || [])];
+      totalPagesForExport = firstData.total_pages || 1;
+      
+      setExportProgress(10);
+      
+      // Fetch remaining pages in batches
+      const maxPages = Math.min(totalPagesForExport, 100);
+      const batchSize = 10;
+      
+      for (let i = 2; i <= maxPages; i += batchSize) {
+        const batchPromises = [];
+        const endPage = Math.min(i + batchSize - 1, maxPages);
+        
+        for (let page = i; page <= endPage; page++) {
+          batchPromises.push(
+            fetch(`${baseUrl}&page=${page}`)
+              .then(res => res.json())
+              .then(data => data.data || [])
+              .catch(() => [])
+          );
+        }
+        
+        const batchResults = await Promise.all(batchPromises);
+        batchResults.forEach(pageData => {
+          allLogs = [...allLogs, ...pageData];
+        });
+        
+        // Update progress (10% to 70%)
+        const progress = 10 + ((i / maxPages) * 60);
+        setExportProgress(Math.min(progress, 70));
+      }
+
+      setExportProgress(75);
 
       // Group all logs
       const grouped: { [key: string]: GroupedLog } = {};
@@ -119,12 +197,14 @@ export default function Log() {
         grouped[timestamp][log.topic as keyof GroupedLog] = log.payload;
       });
 
+      setExportProgress(85);
+
       const groupedArray = Object.values(grouped).sort(
         (a, b) =>
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
-      // Prepare data for Excel
+      // Prepare data for Excel (no additional filtering needed, backend already filtered)
       const excelData = groupedArray.map((log) => ({
         Timestamp: log.timestamp,
         'Suhu (°C)': log.suhu || '-',
@@ -132,6 +212,8 @@ export default function Log() {
         'Kelembaban Tanah (%)': log.kelembaban_tanah || '-',
         'Kapasitas Air (%)': log.kapasitas_air || '-',
       }));
+
+      setExportProgress(90);
 
       // Create workbook and worksheet
       const ws = XLSX.utils.json_to_sheet(excelData);
@@ -147,15 +229,22 @@ export default function Log() {
         { wch: 18 }, // Kapasitas Air
       ];
 
+      setExportProgress(95);
+
       // Generate filename with current date
       const filename = `sensor-logs-${new Date().toISOString().split('T')[0]}.xlsx`;
 
       // Save file
       XLSX.writeFile(wb, filename);
+
+      setExportProgress(100);
     } catch (error) {
       console.error('Error exporting to Excel:', error);
+      alert('Gagal export data. Silakan coba lagi.');
     } finally {
       setLoading(false);
+      setIsExporting(false);
+      setExportProgress(0);
     }
   };
 
@@ -171,16 +260,29 @@ export default function Log() {
         <div className="flex gap-3 flex-wrap">
           <button
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl 
-                     transition-all duration-200 shadow-lg 
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl
+                     transition-all duration-200 shadow-lg
                      border text-sm font-medium
-                     ${autoRefresh 
-                       ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white border-emerald-500/30 shadow-emerald-500/50' 
+                     ${autoRefresh
+                       ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white border-emerald-500/30 shadow-emerald-500/50'
                        : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white border-slate-500/30 shadow-slate-500/50'
                      }`}
           >
             <RefreshCw className={`w-4 h-4 ${autoRefresh ? 'animate-spin' : ''}`} />
-            <span>{autoRefresh ? 'Auto Refresh ON' : 'Auto Refresh OFF'}</span>
+            <span>{autoRefresh ? 'Auto Refresh ON (5s)' : 'Auto Refresh OFF'}</span>
+          </button>
+          <button
+            onClick={() => setShowFilterModal(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl 
+                     transition-all duration-200 shadow-lg 
+                     border text-sm font-medium
+                     ${startDate || endDate
+                       ? 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-purple-500/30 shadow-purple-500/50'
+                       : 'bg-gradient-to-r from-slate-600 to-slate-700 hover:from-slate-700 hover:to-slate-800 text-white border-slate-500/30 shadow-slate-500/50'
+                     }`}
+          >
+            <Filter className="w-4 h-4" />
+            <span>{startDate || endDate || quickFilter ? 'Filter Active' : 'Filter Date'}</span>
           </button>
           <button
             onClick={() => fetchLogs(currentPage)}
@@ -195,19 +297,21 @@ export default function Log() {
           </button>
           <button
             onClick={exportToExcel}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 
-                     hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl 
-                     transition-all duration-200 shadow-lg hover:shadow-emerald-500/50 
+            disabled={loading || isExporting}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700
+                     hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl
+                     transition-all duration-200 shadow-lg hover:shadow-emerald-500/50
                      disabled:opacity-50 disabled:cursor-not-allowed border border-emerald-500/30"
           >
             <Download className="w-4 h-4" />
-            <span className="text-sm font-medium">Export Excel</span>
+            <span className="text-sm font-medium">
+              {isExporting ? `Exporting ${exportProgress}%` : 'Export Excel'}
+            </span>
           </button>
         </div>
       </div>
 
-      <div className="backdrop-blur-sm bg-gradient-to-br from-slate-800/50 to-slate-700/50 
+      <div className="backdrop-blur-sm bg-gradient-to-br from-slate-800/50 to-slate-700/50
                     border border-slate-600/30 rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -282,13 +386,18 @@ export default function Log() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="text-sm text-zinc-400">
           Page {currentPage} of {totalPages}
+          {(startDate || endDate || quickFilter) && (
+            <span className="ml-2 text-purple-400">
+              • Filter: {quickFilter || 'Custom Date'}
+            </span>
+          )}
         </div>
         <div className="flex gap-2">
           <button
             onClick={() => fetchLogs(currentPage - 1)}
             disabled={currentPage === 1 || loading}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-zinc-300 
-                     rounded-lg transition-all duration-200 disabled:opacity-50 
+            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-zinc-300
+                     rounded-lg transition-all duration-200 disabled:opacity-50
                      disabled:cursor-not-allowed border border-slate-600/30 text-sm font-medium"
           >
             Previous
@@ -296,14 +405,135 @@ export default function Log() {
           <button
             onClick={() => fetchLogs(currentPage + 1)}
             disabled={currentPage === totalPages || loading}
-            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-zinc-300 
-                     rounded-lg transition-all duration-200 disabled:opacity-50 
+            className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-zinc-300
+                     rounded-lg transition-all duration-200 disabled:opacity-50
                      disabled:cursor-not-allowed border border-slate-600/30 text-sm font-medium"
           >
             Next
           </button>
         </div>
       </div>
+
+      {/* Filter Modal */}
+      {showFilterModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl border border-slate-600/50 p-6 max-w-md w-full shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
+                  <Filter className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold text-zinc-100">Filter by Date</h3>
+              </div>
+            </div>
+
+            {/* Quick Filters */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-zinc-300 mb-3">
+                Quick Filters
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => applyQuickFilter('1day')}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                    ${quickFilter === '1day'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white border border-purple-500/30 shadow-lg'
+                      : 'bg-slate-700/50 text-zinc-300 border border-slate-600/30 hover:bg-slate-600/50'
+                    }`}
+                >
+                  Last 24h
+                </button>
+                <button
+                  onClick={() => applyQuickFilter('1week')}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                    ${quickFilter === '1week'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white border border-purple-500/30 shadow-lg'
+                      : 'bg-slate-700/50 text-zinc-300 border border-slate-600/30 hover:bg-slate-600/50'
+                    }`}
+                >
+                  Last 7 Days
+                </button>
+                <button
+                  onClick={() => applyQuickFilter('1month')}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+                    ${quickFilter === '1month'
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-700 text-white border border-purple-500/30 shadow-lg'
+                      : 'bg-slate-700/50 text-zinc-300 border border-slate-600/30 hover:bg-slate-600/50'
+                    }`}
+                >
+                  Last 30 Days
+                </button>
+              </div>
+            </div>
+
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-600/50"></div>
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-slate-800 px-2 text-zinc-400">OR</span>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  max={endDate || undefined}
+                  className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-xl 
+                           text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500/50 
+                           focus:border-purple-500/50 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-2">
+                  End Date
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  min={startDate || undefined}
+                  className="w-full px-4 py-2.5 bg-slate-700/50 border border-slate-600/50 rounded-xl 
+                           text-zinc-100 focus:outline-none focus:ring-2 focus:ring-purple-500/50 
+                           focus:border-purple-500/50 transition-all"
+                />
+              </div>
+
+              <div className="pt-2 text-xs text-zinc-400">
+                <p>• Leave both empty to show all data</p>
+                <p>• Set only start date to show data from that date onwards</p>
+                <p>• Set only end date to show data up to that date</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={clearFilter}
+                className="flex-1 px-4 py-2.5 bg-slate-700/50 hover:bg-slate-600/50 text-zinc-300 
+                         rounded-xl transition-all duration-200 border border-slate-600/30 text-sm font-medium"
+              >
+                Clear Filter
+              </button>
+              <button
+                onClick={applyFilter}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-purple-700 
+                         hover:from-purple-700 hover:to-purple-800 text-white rounded-xl 
+                         transition-all duration-200 shadow-lg hover:shadow-purple-500/50 
+                         border border-purple-500/30 text-sm font-medium"
+              >
+                Apply Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
